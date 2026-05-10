@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Улучшение фото</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+  }
+
+  .icon {
+    width: 56px;
+    height: 56px;
+    background: #111;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .icon svg {
+    width: 24px;
+    height: 24px;
+    stroke: #fff;
+    fill: none;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .desc {
+    font-size: 14px;
+    color: #666;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+
+  /* Upload zone */
+  .upload-zone {
+    border: 1.5px dashed #222;
+    border-radius: 16px;
+    padding: 32px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+    margin-bottom: 12px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .upload-zone:hover { border-color: #444; background: #0a0a0a; }
+  .upload-zone.drag { border-color: #fff; background: #0f0f0f; }
+  .upload-zone.has-image { border-style: solid; border-color: #222; padding: 0; }
+
+  .upload-placeholder { pointer-events: none; }
+
+  .upload-icon {
+    width: 40px;
+    height: 40px;
+    background: #111;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 12px;
+  }
+
+  .upload-icon svg {
+    width: 18px; height: 18px;
+    stroke: #555; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .upload-label {
+    font-size: 13px;
+    color: #444;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  .upload-label span { color: #888; }
+
+  input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+
+  /* Preview */
+  .preview-img {
+    display: none;
+    width: 100%;
+    border-radius: 14px;
+    max-height: 280px;
+    object-fit: cover;
+  }
+
+  .preview-img.show { display: block; }
+
+  .photo-meta {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    margin-bottom: 8px;
+  }
+
+  .photo-meta.show { display: flex; }
+
+  .photo-name {
+    font-size: 12px;
+    color: #555;
+    flex: 1;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .photo-change {
+    font-size: 12px;
+    color: #444;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: color 0.15s;
+    background: none;
+    border: none;
+    font-family: inherit;
+    padding: 0;
+  }
+
+  .photo-change:hover { color: #fff; }
+
+  .divider { height: 1px; background: #111; margin: 28px 0; }
+
+  /* Generation area */
+  .gen-area { }
+
+  .btn {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.2px;
+  }
+
+  .btn:hover { background: #e8e8e8; }
+  .btn:active { transform: scale(0.99); }
+
+  .btn:disabled {
+    background: #111;
+    color: #333;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .btn svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* Progress (hidden until generation) */
+  .progress-wrap {
+    display: none;
+    margin-bottom: 28px;
+  }
+
+  .progress-wrap.show { display: block; }
+
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .progress-label { font-size: 12px; color: #555; font-weight: 500; }
+  .progress-pct { font-size: 12px; color: #fff; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  .progress-track {
+    height: 2px;
+    background: #1a1a1a;
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: #fff;
+    border-radius: 99px;
+    width: 0%;
+    transition: width 0.1s ease;
+  }
+
+  .steps {
+    margin-top: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .step {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    opacity: 0.2;
+    transition: opacity 0.3s ease;
+  }
+
+  .step.done, .step.active { opacity: 1; }
+
+  .step-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #333;
+    flex-shrink: 0;
+    transition: background 0.3s;
+  }
+
+  .step.done .step-dot { background: #fff; }
+  .step.active .step-dot { background: #fff; box-shadow: 0 0 0 3px rgba(255,255,255,0.15); }
+
+  .step-text { font-size: 13px; color: #555; font-weight: 400; transition: color 0.3s; }
+  .step.done .step-text, .step.active .step-text { color: #fff; }
+
+  .step-check { margin-left: auto; font-size: 12px; color: #fff; opacity: 0; transition: opacity 0.3s; }
+  .step.done .step-check { opacity: 1; }
+
+  .status {
+    text-align: center;
+    font-size: 12px;
+    color: #444;
+    margin-top: 14px;
+    min-height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="icon">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z" style="display:none"/><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+  </div>
+
+  <h1>Улучшение фото</h1>
+  <p class="desc">Загрузите фотографию — ИИ автоматически улучшит качество, цвет и детали</p>
+
+  <!-- Upload -->
+  <div class="upload-zone" id="zone">
+    <div class="upload-placeholder" id="placeholder">
+      <div class="upload-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      </div>
+      <p class="upload-label">
+        <span>Нажмите для загрузки</span><br>
+        или перетащите файл сюда<br>
+        JPG, PNG, WEBP · до 20 МБ
+      </p>
+    </div>
+    <img class="preview-img" id="preview" alt="Превью" />
+    <input type="file" id="fileInput" accept="image/*" />
+  </div>
+
+  <div class="photo-meta" id="meta">
+    <span class="photo-name" id="photoName"></span>
+    <button class="photo-change" id="changeBtn">Изменить</button>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- Generation -->
+  <div class="gen-area">
+    <div class="progress-wrap" id="progressWrap">
+      <div class="progress-header">
+        <span class="progress-label" id="progressLabel">Анализ изображения</span>
+        <span class="progress-pct" id="pct">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="fill"></div>
+      </div>
+      <div class="steps">
+        <div class="step" id="s0">
+          <div class="step-dot"></div>
+          <span class="step-text">Анализ изображения</span>
+          <span class="step-check">&#10003;</span>
+        </div>
+        <div class="step" id="s1">
+          <div class="step-dot"></div>
+          <span class="step-text">Шумоподавление</span>
+          <span class="step-check">&#10003;</span>
+        </div>
+        <div class="step" id="s2">
+          <div class="step-dot"></div>
+          <span class="step-text">Улучшение деталей</span>
+          <span class="step-check">&#10003;</span>
+        </div>
+        <div class="step" id="s3">
+          <div class="step-dot"></div>
+          <span class="step-text">Цветокоррекция</span>
+          <span class="step-check">&#10003;</span>
+        </div>
+        <div class="step" id="s4">
+          <div class="step-dot"></div>
+          <span class="step-text">Финальная обработка</span>
+          <span class="step-check">&#10003;</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="btn" id="genBtn" disabled onclick="startGeneration()">
+      <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+      Начать генерацию
+    </button>
+    <div class="status" id="status"></div>
+  </div>
+
+</div>
+
+<script>
+  var fileInput = document.getElementById('fileInput');
+  var zone = document.getElementById('zone');
+  var placeholder = document.getElementById('placeholder');
+  var preview = document.getElementById('preview');
+  var meta = document.getElementById('meta');
+  var photoName = document.getElementById('photoName');
+  var changeBtn = document.getElementById('changeBtn');
+  var genBtn = document.getElementById('genBtn');
+
+  fileInput.addEventListener('change', function() {
+    var file = fileInput.files[0];
+    if (!file) return;
+    loadFile(file);
+  });
+
+  zone.addEventListener('dragover', function(e) {
+    e.preventDefault();
+    zone.classList.add('drag');
+  });
+
+  zone.addEventListener('dragleave', function() {
+    zone.classList.remove('drag');
+  });
+
+  zone.addEventListener('drop', function(e) {
+    e.preventDefault();
+    zone.classList.remove('drag');
+    var file = e.dataTransfer.files[0];
+    if (file && file.type.startsWith('image/')) loadFile(file);
+  });
+
+  changeBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    fileInput.value = '';
+    fileInput.click();
+  });
+
+  function loadFile(file) {
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      preview.src = e.target.result;
+      preview.classList.add('show');
+      placeholder.style.display = 'none';
+      zone.classList.add('has-image');
+      photoName.textContent = file.name;
+      meta.classList.add('show');
+      genBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // Generation
+  var fillEl = document.getElementById('fill');
+  var pctEl = document.getElementById('pct');
+  var progressWrap = document.getElementById('progressWrap');
+  var progressLabel = document.getElementById('progressLabel');
+  var status = document.getElementById('status');
+
+  var stepEls = ['s0','s1','s2','s3','s4'].map(function(id) { return document.getElementById(id); });
+  var stepLabels = ['Анализ изображения','Шумоподавление','Улучшение деталей','Цветокоррекция','Финальная обработка'];
+
+  // 60 seconds total, distributed across 5 steps
+  // targets in % and durations in ms per step
+  var stepTargets = [18, 38, 60, 82, 100];
+  var stepDurations = [9000, 12000, 14000, 13000, 12000]; // sum = 60000
+
+  var prog = 0;
+  var generating = false;
+
+  function startGeneration() {
+    if (generating) return;
+    generating = true;
+    genBtn.disabled = true;
+    zone.style.pointerEvents = 'none';
+    changeBtn.style.pointerEvents = 'none';
+    progressWrap.classList.add('show');
+    status.textContent = 'Обрабатываем вашу фотографию...';
+    runStep(0);
+  }
+
+  function runStep(i) {
+    if (i >= stepEls.length) return;
+    stepEls[i].classList.add('active');
+    progressLabel.textContent = stepLabels[i];
+
+    var target = stepTargets[i];
+    var duration = stepDurations[i];
+    var startProg = prog;
+    var startTime = performance.now();
+
+    function tick(now) {
+      var elapsed = now - startTime;
+      var t = Math.min(elapsed / duration, 1);
+      // easeInOut
+      var eased = t < 0.5 ? 2*t*t : -1+(4-2*t)*t;
+      prog = startProg + (target - startProg) * eased;
+      fillEl.style.width = prog + '%';
+      pctEl.textContent = Math.round(prog) + '%';
+
+      if (t < 1) {
+        requestAnimationFrame(tick);
+      } else {
+        prog = target;
+        fillEl.style.width = prog + '%';
+        pctEl.textContent = Math.round(prog) + '%';
+        stepEls[i].classList.remove('active');
+        stepEls[i].classList.add('done');
+
+        if (i === stepEls.length - 1) {
+          status.textContent = 'Готово! Переходим к результату...';
+          setTimeout(function() {
+            window.location.href = '/Users/LENOVO/Desktop/save-result-usd-rub.html';
+          }, 800);
+        } else {
+          setTimeout(function() { runStep(i + 1); }, 150);
+        }
+      }
+    }
+
+    requestAnimationFrame(tick);
+  }
+</script>
+</body>
+</html>

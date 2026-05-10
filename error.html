@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ошибка</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+  }
+
+  .icon {
+    width: 56px;
+    height: 56px;
+    background: #111;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .icon svg {
+    width: 24px; height: 24px;
+    stroke: #fff; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.6;
+    margin-bottom: 40px;
+  }
+
+  .divider { height: 1px; background: #111; margin-bottom: 28px; }
+
+  .error-block {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 28px;
+  }
+
+  .error-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 0;
+  }
+
+  .error-row + .error-row {
+    border-top: 1px solid #111;
+  }
+
+  .error-key {
+    font-size: 12px;
+    color: #444;
+  }
+
+  .error-val {
+    font-size: 12px;
+    color: #666;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .btn {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.2px;
+    margin-bottom: 10px;
+  }
+
+  .btn:hover { background: #e8e8e8; }
+  .btn:active { transform: scale(0.99); }
+
+  .btn svg {
+    width: 15px; height: 15px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .btn-secondary {
+    width: 100%;
+    background: transparent;
+    color: #444;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 15px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: border-color 0.15s, color 0.15s;
+    letter-spacing: -0.2px;
+  }
+
+  .btn-secondary:hover { border-color: #333; color: #888; }
+
+  .status {
+    text-align: center;
+    font-size: 11px;
+    color: #2a2a2a;
+    margin-top: 20px;
+    letter-spacing: 0.3px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="icon">
+    <svg viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="9"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+  </div>
+
+  <h1>Сведенья</h1>
+  <p class="desc">Сервис испольует server less архитектуру и обрабатывает фото прямо в вашем браузере. Мобильные устройства или устройства с слабым CPU|GPU не справятся с этой задачей.<br>Попробуйте повторить генерацию на ПК с os Windos/Linux.</p>
+
+  <div class="error-block">
+    <div class="error-row">
+      <span class="error-key">Код ошибки</span>
+      <span class="error-val" id="errCode">ERR_UNKNOWN</span>
+    </div>
+    <div class="error-row">
+      <span class="error-key">Время</span>
+      <span class="error-val" id="errTime">—</span>
+    </div>
+    <div class="error-row">
+      <span class="error-key">ID запроса</span>
+      <span class="error-val" id="errId">—</span>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn" onclick="location.reload()">
+    <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 11-2.12-9.36L23 10"/></svg>
+    Попробовать снова
+  </button>
+
+  <button class="btn-secondary" onclick="history.back()">Вернуться назад</button>
+
+  <p class="status" id="statusLine">Серверы работают в штатном режиме</p>
+
+</div>
+
+<script>
+  // Время ошибки
+  var now = new Date();
+  var pad = function(n){ return n < 10 ? '0'+n : n; };
+  document.getElementById('errTime').textContent =
+    pad(now.getHours()) + ':' + pad(now.getMinutes()) + ':' + pad(now.getSeconds());
+
+  // Псевдо-ID запроса
+  var chars = 'abcdef0123456789';
+  var id = '';
+  for (var i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  document.getElementById('errId').textContent = id.toUpperCase();
+</script>
+
+</body>
+</html>
