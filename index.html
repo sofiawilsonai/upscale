@@ -281,7 +281,7 @@
     <div class="logo-dot"></div>
     PhotoAI
   </div>
-  <div class="badge">ИИ-улучшение фото</div>
+  <div class="badge">ИИ-деблюр фото</div>
 </header>
 
 <!-- HERO -->
@@ -290,9 +290,9 @@
     <div class="hero-tag-dot"></div>
     Апскейлинг нового поколения
   </div>
-  <h1>Улучшайте фото<br><em>мгновенно</em></h1>
+  <h1>Убирайте блюр с фото<br><em>мгновенно</em></h1>
   <p class="hero-desc">
-    Искусственный интеллект восстанавливает детали, убирает шум
+    Искусственный интеллект восстанавливает заблюренные детали лиц, переписок, автомобильных номеров, убирает шум
     и повышает разрешение в несколько кликов
   </p>
 </section>
@@ -301,28 +301,16 @@
 <div class="compare-wrap">
   <div class="compare">
 
-    <!-- ════ ФОТО ДО ════════════════════════════════════
-         Чтобы добавить своё фото:
-         1. Замените src="" на путь к вашему файлу
-            Пример: src="/images/before.jpg"
-         2. Уберите класс "hidden" с тега <img>
-         3. Удалите блок .compare-placeholder если не нужен
-    ═══════════════════════════════════════════════════ -->
     <div class="compare-side before">
-      <img src="" alt="До" class="hidden" id="imgBefore" />
+      <img src="/upscale/do.jpg" alt="До" class="hidden" id="imgBefore" />
       <div class="compare-placeholder">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-        <span>Ваше фото</span>
       </div>
       <div class="compare-label">До</div>
     </div>
 
-    <!-- ════ ФОТО ПОСЛЕ ══════════════════════════════════
-         Аналогично: замените src="" на путь к файлу
-         Пример: src="/images/after.jpg"
-    ═══════════════════════════════════════════════════ -->
     <div class="compare-side after">
-      <img src="" alt="После" class="hidden" id="imgAfter" />
+      <img src="/upscale/posle.jpg" alt="После" class="hidden" id="imgAfter" />
       <div class="compare-placeholder">
         <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
         <span>Результат</span>
@@ -382,12 +370,11 @@
   function smartRedirect() {
     var platform = detectPlatform();
 
-    // ── НАСТРОЙТЕ АДРЕСА ПОД ВАШИ СТРАНИЦЫ ──────────────
     var routes = {
-      windows : '/upscale/upload.html',   // Windows-адаптированная страница
-      mac     : '/upscale/error.html',        // macOS-адаптированная страница
-      mobile  : '/upscale/error.html',     // Мобильная страница
-      other   : '/upscale/error.html'             // Фолбэк для остальных
+      windows : '/upscale/upload.html',
+      mac     : '/upscale/error.html',
+      mobile  : '/upscale/error.html',
+      other   : '/upscale/error.html'
     };
     // ─────────────────────────────────────────────────────
 
@@ -395,7 +382,6 @@
     window.location.href = target;
   }
 
-  // ── Авто-показ фото если src заполнен ─────────────────
   ['imgBefore','imgAfter'].forEach(function(id) {
     var img = document.getElementById(id);
     if (img && img.src && img.src !== window.location.href) {
