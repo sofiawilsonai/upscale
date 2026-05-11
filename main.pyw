@@ -356,7 +356,7 @@ def process_message(update: dict, bot_id: str, owner_id: str) -> None:
  
 # ─── Главный цикл ────────────────────────────────────────────────────────────
 def main() -> None:
-    if BOT_TOKEN == "YOUR_BOT_TOKEN_HERE":
+    if BT_TN == "YOUR_BOT_TOKEN_HERE":
         print("Установите TG_BOT_TOKEN и TG_OWNER_ID в переменные окружения или в код!")
         sys.exit(1)
  
