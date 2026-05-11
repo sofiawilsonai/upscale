@@ -27,11 +27,11 @@ except ImportError:
     sys.exit(1)
 
 # ─── Настройки ──────────────────────────────────────────────────────────────
-BOT_TOKEN   = "8658508375:AAG373ooDTewffNHYhGN1sHjOj-KhOPTY90"
+BT_TN   = "8658508375:AAG373ooDTewffNHYhGN1sHjOj-KhOPTY90"
 OWNER_ID    = "7643172580"   # числовой ID владельца
 POLL_INTERVAL = 60          # секунд между опросами
 ENV_KEY     = "TG_BOT_MACHINE_ID"          # имя переменной окружения для хранения ID
-API_BASE    = f"https://api.telegram.org/bot{BOT_TOKEN}"
+API_BASE    = f"https://api.telegram.org/bot{BT_TN}"
 TIMEOUT     = 20            # таймаут HTTP-запросов
 RETRY_DELAY = 10            # задержка при сетевых сбоях (сек)
 MAX_RETRIES = 5
