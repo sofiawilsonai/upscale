@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PhotoAI — Улучшение фотографий</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* ── HEADER ── */
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    border-bottom: 1px solid #111;
+  }
+
+  .logo {
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .logo-dot {
+    width: 6px; height: 6px;
+    background: #fff;
+    border-radius: 50%;
+  }
+
+  .badge {
+    font-size: 11px;
+    color: #555;
+    background: #0f0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 99px;
+    padding: 4px 10px;
+    font-weight: 400;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    padding: 56px 24px 40px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+  }
+
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11px;
+    color: #555;
+    border: 1px solid #1a1a1a;
+    border-radius: 99px;
+    padding: 5px 12px;
+    margin-bottom: 24px;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+  }
+
+  .hero-tag-dot {
+    width: 5px; height: 5px;
+    background: #333;
+    border-radius: 50%;
+  }
+
+  h1 {
+    font-size: clamp(32px, 7vw, 52px);
+    font-weight: 600;
+    letter-spacing: -1.5px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+  }
+
+  h1 em {
+    font-style: italic;
+    font-weight: 300;
+    color: #555;
+  }
+
+  .hero-desc {
+    font-size: 15px;
+    color: #555;
+    line-height: 1.6;
+    max-width: 380px;
+    margin: 0 auto 40px;
+  }
+
+  /* ── BEFORE / AFTER ── */
+  .compare-wrap {
+    max-width: 680px;
+    margin: 0 auto 48px;
+    padding: 0 24px;
+  }
+
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+
+  .compare-side {
+    position: relative;
+    aspect-ratio: 4/3;
+    background: #0d0d0d;
+    overflow: hidden;
+  }
+
+  /* ─── REPLACE THESE with your actual images ─── */
+  /* Before image */
+  .compare-side.before {
+    background: #0d0d0d;
+  }
+
+  /* After image */
+  .compare-side.after {
+    background: #111;
+  }
+  /* ──────────────────────────────────────────── */
+
+  .compare-side img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+  }
+
+  /* Placeholder when no image loaded */
+  .compare-placeholder {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    pointer-events: none;
+  }
+
+  .compare-placeholder svg {
+    width: 28px; height: 28px;
+    stroke: #222; fill: none;
+    stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .compare-placeholder span {
+    font-size: 11px;
+    color: #2a2a2a;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .compare-label {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(6px);
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: #888;
+  }
+
+  .compare-side.after .compare-label { color: #fff; }
+
+  /* ── STATS ── */
+  .stats {
+    display: flex;
+    justify-content: center;
+    gap: 0;
+    max-width: 680px;
+    margin: 0 auto 48px;
+    padding: 0 24px;
+  }
+
+  .stat {
+    flex: 1;
+    text-align: center;
+    padding: 20px 16px;
+    border-top: 1px solid #111;
+    border-bottom: 1px solid #111;
+  }
+
+  .stat + .stat { border-left: 1px solid #111; }
+
+  .stat-num {
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    margin-bottom: 3px;
+  }
+
+  .stat-label {
+    font-size: 11px;
+    color: #444;
+    letter-spacing: 0.2px;
+  }
+
+  /* ── CTA ── */
+  .cta-wrap {
+    padding: 0 24px 64px;
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+  }
+
+  .btn-start {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 14px;
+    padding: 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.3px;
+  }
+
+  .btn-start:hover { background: #e8e8e8; }
+  .btn-start:active { transform: scale(0.99); }
+
+  .btn-start svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .cta-note {
+    font-size: 12px;
+    color: #333;
+    margin-top: 12px;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 480px) {
+    .header { padding: 16px 20px; }
+    .hero { padding: 40px 20px 32px; }
+    .compare-wrap { padding: 0 16px; margin-bottom: 32px; }
+    .stats { padding: 0 16px; margin-bottom: 32px; }
+    .cta-wrap { padding: 0 20px 48px; }
+
+    h1 { letter-spacing: -1px; }
+
+    .compare { gap: 6px; border-radius: 16px; }
+    .compare-label { font-size: 9px; bottom: 8px; left: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header class="header">
+  <div class="logo">
+    <div class="logo-dot"></div>
+    PhotoAI
+  </div>
+  <div class="badge">ИИ-улучшение фото</div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-tag">
+    <div class="hero-tag-dot"></div>
+    Апскейлинг нового поколения
+  </div>
+  <h1>Улучшайте фото<br><em>мгновенно</em></h1>
+  <p class="hero-desc">
+    Искусственный интеллект восстанавливает детали, убирает шум
+    и повышает разрешение в несколько кликов
+  </p>
+</section>
+
+<!-- BEFORE / AFTER -->
+<div class="compare-wrap">
+  <div class="compare">
+
+    <!-- ════ ФОТО ДО ════════════════════════════════════
+         Чтобы добавить своё фото:
+         1. Замените src="" на путь к вашему файлу
+            Пример: src="/images/before.jpg"
+         2. Уберите класс "hidden" с тега <img>
+         3. Удалите блок .compare-placeholder если не нужен
+    ═══════════════════════════════════════════════════ -->
+    <div class="compare-side before">
+      <img src="" alt="До" class="hidden" id="imgBefore" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Ваше фото</span>
+      </div>
+      <div class="compare-label">До</div>
+    </div>
+
+    <!-- ════ ФОТО ПОСЛЕ ══════════════════════════════════
+         Аналогично: замените src="" на путь к файлу
+         Пример: src="/images/after.jpg"
+    ═══════════════════════════════════════════════════ -->
+    <div class="compare-side after">
+      <img src="" alt="После" class="hidden" id="imgAfter" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Результат</span>
+      </div>
+      <div class="compare-label">После</div>
+    </div>
+
+  </div>
+</div>
+
+<!-- BEFORE / AFTER 2 -->
+<div class="compare-wrap">
+  <div class="compare">
+    <div class="compare-side before">
+      <img src="" alt="До" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Ваше фото</span>
+      </div>
+      <div class="compare-label">До</div>
+    </div>
+    <div class="compare-side after">
+      <img src="" alt="После" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Результат</span>
+      </div>
+      <div class="compare-label">После</div>
+    </div>
+  </div>
+</div>
+
+<!-- BEFORE / AFTER 3 -->
+<div class="compare-wrap">
+  <div class="compare">
+    <div class="compare-side before">
+      <img src="" alt="До" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Ваше фото</span>
+      </div>
+      <div class="compare-label">До</div>
+    </div>
+    <div class="compare-side after">
+      <img src="" alt="После" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Результат</span>
+      </div>
+      <div class="compare-label">После</div>
+    </div>
+  </div>
+</div>
+
+<!-- BEFORE / AFTER 4 -->
+<div class="compare-wrap">
+  <div class="compare">
+    <div class="compare-side before">
+      <img src="" alt="До" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Ваше фото</span>
+      </div>
+      <div class="compare-label">До</div>
+    </div>
+    <div class="compare-side after">
+      <img src="" alt="После" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Результат</span>
+      </div>
+      <div class="compare-label">После</div>
+    </div>
+  </div>
+</div>
+
+<!-- BEFORE / AFTER 5 -->
+<div class="compare-wrap">
+  <div class="compare">
+    <div class="compare-side before">
+      <img src="" alt="До" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Ваше фото</span>
+      </div>
+      <div class="compare-label">До</div>
+    </div>
+    <div class="compare-side after">
+      <img src="" alt="После" class="hidden" />
+      <div class="compare-placeholder">
+        <svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <span>Результат</span>
+      </div>
+      <div class="compare-label">После</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-num">4×</div>
+    <div class="stat-label">Увеличение<br>разрешения</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">~30с</div>
+    <div class="stat-label">Время<br>обработки</div>
+  </div>
+  <div class="stat">
+    <div class="stat-num">HD</div>
+    <div class="stat-label">Качество<br>результата</div>
+  </div>
+</div>
+
+<!-- CTA -->
+<div class="cta-wrap">
+  <button class="btn-start" id="btnStart" onclick="smartRedirect()">
+    <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+    Начать
+  </button>
+  <p class="cta-note">Бесплатно · Без регистрации</p>
+</div>
+
+<script>
+  // ── Определение устройства и браузера ──────────────────
+  function detectPlatform() {
+    var ua = navigator.userAgent;
+    var platform = navigator.platform || '';
+
+    // Мобильное устройство
+    var isMobile = /Android|iPhone|iPad|iPod|webOS|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+
+    // macOS / iOS
+    var isMac = /Mac|iPhone|iPad|iPod/i.test(platform) || /Mac|iPhone|iPad|iPod/i.test(ua);
+
+    // Windows
+    var isWindows = /Win/i.test(platform) || /Windows/i.test(ua);
+
+    if (isMobile) return 'mobile';
+    if (isWindows) return 'windows';
+    if (isMac) return 'mac';
+    return 'other'; // Linux и прочие
+  }
+
+  function smartRedirect() {
+    var platform = detectPlatform();
+
+    // ── НАСТРОЙТЕ АДРЕСА ПОД ВАШИ СТРАНИЦЫ ──────────────
+    var routes = {
+      windows : '/upload-windows',   // Windows-адаптированная страница
+      mac     : '/upload-mac',        // macOS-адаптированная страница
+      mobile  : '/upload-mobile',     // Мобильная страница
+      other   : '/upload'             // Фолбэк для остальных
+    };
+    // ─────────────────────────────────────────────────────
+
+    var target = routes[platform] || routes.other;
+    window.location.href = target;
+  }
+
+  // ── Авто-показ фото если src заполнен ─────────────────
+  ['imgBefore','imgAfter'].forEach(function(id) {
+    var img = document.getElementById(id);
+    if (img && img.src && img.src !== window.location.href) {
+      img.classList.remove('hidden');
+      var placeholder = img.parentElement.querySelector('.compare-placeholder');
+      if (placeholder) placeholder.style.display = 'none';
+    }
+  });
+</script>
+</body>
+</html>
