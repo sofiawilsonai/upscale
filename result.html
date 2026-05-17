@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Результат</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #000;
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .wrap {
+    width: 100%;
+    max-width: 860px;
+    padding: 24px;
+  }
+
+  .icon {
+    width: 56px; height: 56px;
+    background: #111;
+    border-radius: 16px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 24px;
+  }
+
+  .icon svg {
+    width: 24px; height: 24px;
+    stroke: #fff; fill: none;
+    stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  h1 {
+    font-size: 28px;
+    font-weight: 600;
+    letter-spacing: -0.5px;
+    line-height: 1.2;
+    margin-bottom: 8px;
+  }
+
+  .desc {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin-bottom: 32px;
+  }
+
+  /* ── Slider ── */
+  .slider-wrap {
+    position: relative;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+    background: #0d0d0d;
+    user-select: none;
+    cursor: col-resize;
+    touch-action: none;
+  }
+
+  /* After — base layer, determines height */
+  .img-after {
+    display: block;
+    width: 100%;
+    height: auto;
+    max-height: 600px;
+    object-fit: cover;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Before — clipped curtain */
+  .before-layer {
+    position: absolute;
+    inset: 0;
+    width: 50%;
+    overflow: hidden;
+    z-index: 2;
+  }
+
+  .before-layer img {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Divider */
+  .divider-line {
+    position: absolute;
+    top: 0; bottom: 0;
+    left: 50%;
+    width: 2px;
+    background: rgba(255,255,255,0.9);
+    transform: translateX(-50%);
+    z-index: 3;
+    pointer-events: none;
+  }
+
+  /* Handle */
+  .handle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 4;
+    width: 44px; height: 44px;
+    background: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 2px 16px rgba(0,0,0,0.6);
+    pointer-events: none;
+  }
+
+  .handle svg {
+    width: 20px; height: 20px;
+    stroke: #000; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  /* Labels */
+  .lbl {
+    position: absolute;
+    bottom: 14px;
+    z-index: 5;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    background: rgba(0,0,0,0.55);
+    backdrop-filter: blur(6px);
+    padding: 4px 8px;
+    border-radius: 6px;
+    pointer-events: none;
+  }
+
+  .lbl-before { left: 14px; color: #888; }
+  .lbl-after  { right: 14px; color: #fff; }
+
+  .hint {
+    font-size: 12px;
+    color: #333;
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 28px;
+  }
+
+  .sep { height: 1px; background: #111; margin-bottom: 28px; }
+
+  .btn {
+    width: 100%;
+    background: #fff;
+    color: #000;
+    border: none;
+    border-radius: 12px;
+    padding: 16px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    letter-spacing: -0.2px;
+    text-decoration: none;
+  }
+
+  .btn:hover { background: #e8e8e8; }
+  .btn:active { transform: scale(0.99); }
+
+  .btn svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+
+  /* Empty state */
+  .empty-state { text-align: center; padding: 20px 0; }
+
+  .empty-icon {
+    width: 48px; height: 48px;
+    background: #111; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+  }
+
+  .empty-icon svg {
+    width: 20px; height: 20px;
+    stroke: #555; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
+  .empty-title { font-size: 15px; font-weight: 600; margin-bottom: 6px; }
+  .empty-sub   { font-size: 13px; color: #555; }
+</style>
+</head>
+<body>
+<div class="wrap" id="root"></div>
+
+<script>
+  (function() {
+  /**
+   * XSS protection:
+   * — URLSearchParams for param parsing (no manual string ops)
+   * — All URLs validated: only http/https allowed
+   * — img.src set via DOM property, never innerHTML
+   * — All user-derived text via textContent / createTextNode
+   * — No eval, no document.write, no innerHTML with param data
+   */
+
+  function isSafeUrl(url) {
+    try {
+      var p = new URL(url);
+      return p.protocol === 'https:' || p.protocol === 'http:';
+    } catch (e) { return false; }
+  }
+
+  function makeIconBlock() {
+    var el = document.createElement('div');
+    el.className = 'icon';
+    el.innerHTML = '<svg viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+    return el;
+  }
+
+  var root   = document.getElementById('root');
+  var params = new URLSearchParams(window.location.search);
+  var afterUrl  = params.get('img');
+  var beforeUrl = params.get('orig');
+
+  var afterOk  = afterUrl  && isSafeUrl(afterUrl);
+  var beforeOk = beforeUrl && isSafeUrl(beforeUrl);
+
+  /* ── Empty state ── */
+  if (!afterOk) {
+    root.appendChild(makeIconBlock());
+
+    var h1e = document.createElement('h1');
+    h1e.textContent = 'Результат';
+    root.appendChild(h1e);
+
+    var sep0 = document.createElement('div');
+    sep0.className = 'sep';
+    root.appendChild(sep0);
+
+    var es = document.createElement('div');
+    es.className = 'empty-state';
+    es.innerHTML = '<div class="empty-icon"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div>';
+
+    var et = document.createElement('div');
+    et.className = 'empty-title';
+    et.textContent = 'Результат не найден';
+    es.appendChild(et);
+
+    var esub = document.createElement('div');
+    esub.className = 'empty-sub';
+    esub.textContent = 'Ссылка недействительна или устарела';
+    es.appendChild(esub);
+
+    root.appendChild(es);
+    return; // stop here
+  }
+
+  /* ── Result state ── */
+  root.appendChild(makeIconBlock());
+
+  var h1 = document.createElement('h1');
+  h1.textContent = 'Готово';
+  root.appendChild(h1);
+
+  var desc = document.createElement('p');
+  desc.className = 'desc';
+  desc.textContent = beforeOk
+    ? 'Перетащите шторку чтобы сравнить оригинал и результат'
+    : 'Ваше фото успешно улучшено';
+  root.appendChild(desc);
+
+  /* ── Slider container ── */
+  var sw = document.createElement('div');
+  sw.className = 'slider-wrap';
+
+  // After image — base layer
+  var imgAfter = document.createElement('img');
+  imgAfter.className = 'img-after';
+  imgAfter.alt = 'После';
+  imgAfter.src = afterUrl; // safe: validated above, set via property
+  sw.appendChild(imgAfter);
+
+  if (beforeOk) {
+    // Before curtain
+    var beforeLayer = document.createElement('div');
+    beforeLayer.className = 'before-layer';
+
+    var imgBefore = document.createElement('img');
+    imgBefore.alt = 'До';
+    imgBefore.src = beforeUrl; // safe: validated above, set via property
+    beforeLayer.appendChild(imgBefore);
+    sw.appendChild(beforeLayer);
+
+    // Divider line
+    var dline = document.createElement('div');
+    dline.className = 'divider-line';
+    sw.appendChild(dline);
+
+    // Handle
+    var handle = document.createElement('div');
+    handle.className = 'handle';
+    handle.innerHTML = '<svg viewBox="0 0 24 24"><line x1="8" y1="12" x2="16" y2="12"/><polyline points="11 9 8 12 11 15"/><polyline points="13 9 16 12 13 15"/></svg>';
+    sw.appendChild(handle);
+
+    // Labels
+    var lblB = document.createElement('div');
+    lblB.className = 'lbl lbl-before';
+    lblB.textContent = 'До';
+    sw.appendChild(lblB);
+
+    var lblA = document.createElement('div');
+    lblA.className = 'lbl lbl-after';
+    lblA.textContent = 'После';
+    sw.appendChild(lblA);
+
+    /* ── Drag logic ── */
+    var pct = 50;
+    var dragging = false;
+
+    function applyPct(p) {
+      pct = Math.max(0, Math.min(100, p));
+      var fullW = sw.offsetWidth;
+      beforeLayer.style.width = pct + '%';
+      imgBefore.style.width   = fullW + 'px';
+      dline.style.left         = pct + '%';
+      handle.style.left        = pct + '%';
+    }
+
+    function getClientX(e) {
+      return e.touches ? e.touches[0].clientX : e.clientX;
+    }
+
+    function onMove(e) {
+      if (!dragging) return;
+      var rect = sw.getBoundingClientRect();
+      applyPct(((getClientX(e) - rect.left) / rect.width) * 100);
+    }
+
+    sw.addEventListener('mousedown',  function(e) { dragging = true; onMove(e); });
+    sw.addEventListener('touchstart', function(e) { dragging = true; onMove(e); }, { passive: true });
+    window.addEventListener('mousemove',  onMove);
+    window.addEventListener('touchmove',  onMove, { passive: true });
+    window.addEventListener('mouseup',    function() { dragging = false; });
+    window.addEventListener('touchend',   function() { dragging = false; });
+
+    imgAfter.addEventListener('load', function() {
+      applyPct(50);
+    });
+
+    window.addEventListener('resize', function() {
+      imgBefore.style.width = sw.offsetWidth + 'px';
+    });
+  }
+
+  root.appendChild(sw);
+
+  if (beforeOk) {
+    var hint = document.createElement('p');
+    hint.className = 'hint';
+    hint.textContent = '← Потяните для сравнения →';
+    root.appendChild(hint);
+  }
+
+  var sep = document.createElement('div');
+  sep.className = 'sep';
+  root.appendChild(sep);
+
+  // Download button
+  var btn = document.createElement('a');
+  btn.className = 'btn';
+  btn.href      = afterUrl; // safe: validated
+  btn.download  = 'result.jpg';
+  btn.rel       = 'noopener noreferrer';
+  btn.innerHTML = '<svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>';
+  btn.appendChild(document.createTextNode('\u00a0Скачать результат'));
+  root.appendChild(btn);
+  })();
+</script>
+</body>
+</html>
